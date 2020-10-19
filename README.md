@@ -1,4 +1,4 @@
-Hello ____! Thank you for considering joining the Lawline team. Below is a coding exercise that will allow you
+Hello, Mike! Thank you for considering joining the Lawline team. Below is a coding exercise that will allow you
 to highlight your skills.
 
 You have up to 48 hours to submit, however, we respect your time and expect this to only take a few hours. Please make
