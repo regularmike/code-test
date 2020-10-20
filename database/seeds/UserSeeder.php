@@ -41,11 +41,13 @@ class UserSeeder extends Seeder
         // create a user with no subscription at all
         factory(User::class)->create(['password' => $password]);    
         
-        // create an admin user
-        factory(User::class)->create([
-            'email' => 'admin@example.com',
-            'password' => $password,
-            'is_admin' => true
-        ]);    
+        // create an admin user if it doesn't already exist
+        if (!User::where('email', 'admin@example.com')->exists()) {            
+            factory(User::class)->create([
+                'email' => 'admin@example.com',
+                'password' => $password,
+                'is_admin' => true
+            ]);    
+        }
     }
 }

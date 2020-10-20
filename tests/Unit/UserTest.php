@@ -11,7 +11,7 @@ class UserTest extends TestCase
 {    
     private $user;
 
-    protected function setUp() : void
+    protected function setUp(): void
     {
         parent::setUp();
         
@@ -22,7 +22,7 @@ class UserTest extends TestCase
         $this->user->setRelation('subscription', $subscription);        
     }
 
-    public function testSubscriptionNotActiveIfEndInPast() : void
+    public function testSubscriptionNotActiveIfEndInPast(): void
     {           
         $subscription = $this->user->subscription;
         $subscription->start = Carbon::now()->addYears(-2);
@@ -30,7 +30,7 @@ class UserTest extends TestCase
         $this->assertFalse($this->user->hasActiveSubscription);
     }
 
-    public function testSubscriptionNotActiveIfStartInFuture() : void
+    public function testSubscriptionNotActiveIfStartInFuture(): void
     {
         $subscription = $this->user->subscription;
         $subscription->start = Carbon::now()->addDays(5);
@@ -38,7 +38,7 @@ class UserTest extends TestCase
         $this->assertFalse($this->user->hasActiveSubscription);
     }
 
-    public function testSubscriptionIsActiveIfNowBetweenStartAndEnd() : void
+    public function testSubscriptionIsActiveIfNowBetweenStartAndEnd(): void
     {
         $subscription = $this->user->subscription;
         $subscription->start = Carbon::now()->addDays(-5);

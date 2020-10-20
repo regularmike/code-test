@@ -20,7 +20,10 @@ class CreateSubscriptionsTable extends Migration
                   ->onDelete('cascade');
             $table->dateTime('start');
             $table->dateTime('end');
-            $table->timestamps();            
+            $table->timestamps();   
+            
+            $table->index('start');
+            $table->index('end');
         });
     }
 
