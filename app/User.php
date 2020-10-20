@@ -2,9 +2,10 @@
 
 namespace App;
 
-use Illuminate\Foundation\Auth\User as Authenticatable;
-use Illuminate\Notifications\Notifiable;
+use Carbon\Carbon;
 use Laravel\Passport\HasApiTokens;
+use Illuminate\Notifications\Notifiable;
+use Illuminate\Foundation\Auth\User as Authenticatable;
 
 class User extends Authenticatable
 {
@@ -51,5 +52,11 @@ class User extends Authenticatable
     public function subscription()
     {
         return $this->hasOne('App\Subscription');
+    }
+
+    public function getHasActiveSubscriptionAttribute() 
+    {
+        $sub = $this->subscription;        
+        return Carbon::now()->between($sub->start, $sub->end);
     }
 }
