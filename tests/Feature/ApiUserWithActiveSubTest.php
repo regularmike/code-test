@@ -7,17 +7,15 @@ use App\Product;
 use Carbon\Carbon;
 use Tests\TestCase;
 use App\Subscription;
-use Illuminate\Foundation\Testing\WithFaker;
-use Illuminate\Foundation\Testing\RefreshDatabase;
-use Illuminate\Support\Facades\DB;
 use Laravel\Passport\Passport;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Foundation\Testing\RefreshDatabase;
 
-class ApiTest extends TestCase
+class ApiUserWithActiveSubTest extends TestCase
 {    
     use RefreshDatabase;
 
-    private $userWithActiveSub, $userWithExpiredSub, $userWithNoSub, $adminUser, 
-            $product, $productCount;
+    private $user, $product;
 
     protected function setUp(): void
     {
@@ -28,13 +26,10 @@ class ApiTest extends TestCase
             'ProductSeeder'
         ]);
 
-        $this->userWithActiveSub = $this->getUserWithActiveSub();
-        $this->userWithExpiredSub = $this->getUserWithExpiredSub();
-        $this->userWithNoSub = User::doesntHave('subscription')->first();
-        $this->adminUser = User::where('is_admin', true)->first();
+        $this->user = $this->getUserWithActiveSub();        
+        Passport::actingAs($this->user);
 
-        $this->product = Product::first();
-        $this->productCount = DB::table('products')->count();
+        $this->product = Product::first();        
     }
 
     protected function getUserWithActiveSub(): User
@@ -45,23 +40,11 @@ class ApiTest extends TestCase
             ['end', '>', $now]
         ])->first();
         return $subscription->user;
-    }
-
-    protected function getUserWithExpiredSub(): User
-    {
-        $now = Carbon::now();
-        // this should give us a user without any products assigned yet
-        $subscription = Subscription::where('start', '>', $now)
-                                    ->orWhere('end', '<', $now)
-                                    ->latest()
-                                    ->first();
-        return $subscription->user;
-    }    
+    }  
 
     public function testOneProductCanBeFetched()
     {
-        $product = $this->product;
-        Passport::actingAs($this->userWithActiveSub);
+        $product = $this->product;        
 
         $response = $this->getJson("/api/products/{$product->id}");
 
@@ -73,20 +56,19 @@ class ApiTest extends TestCase
     }
 
     public function testAllProductsCanBeFetched()
-    {
-        Passport::actingAs($this->userWithActiveSub);
+    {        
+        $productCount = DB::table('products')->count();
 
         $response = $this->getJson("/api/products");
 
         $response
             ->assertStatus(200)
-            ->assertJsonCount($this->productCount);
+            ->assertJsonCount($productCount);
     }
 
     public function testProductCanBeAddedToUser()
-    {
-        Passport::actingAs($this->userWithActiveSub);
-        $userId = $this->userWithActiveSub->id;
+    {     
+        $userId = $this->user->id;
 
         $response = $this->postJson("/api/users/$userId/products", [
             'product_id' => $this->product->id
@@ -100,9 +82,8 @@ class ApiTest extends TestCase
     }
 
     public function testProductCanBeRemovedFromUser()
-    {
-        Passport::actingAs($this->userWithActiveSub);
-        $userId = $this->userWithActiveSub->id;
+    {     
+        $userId = $this->user->id;
         $productId = $this->product->id;
         $this->postJson("/api/users/$userId/products", [
             'product_id' => $productId
@@ -118,12 +99,11 @@ class ApiTest extends TestCase
     }
 
     public function testUserProductsCanBeFetched()
-    {        
-        Passport::actingAs($this->userWithActiveSub);
+    {                     
         $numProducts = 3;
-        $userId = $this->userWithActiveSub->id;
+        $userId = $this->user->id;
         $products = Product::take($numProducts)->get();
-        $this->userWithActiveSub->products()->saveMany($products);
+        $this->user->products()->saveMany($products);
 
         $response = $this->deleteJson("/api/users/$userId/products");
 
