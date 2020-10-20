@@ -22,6 +22,8 @@ class CreateProductUserTable extends Migration
                   ->constrained()
                   ->onDelete('cascade');            
             $table->timestamps();       
+
+            $table->unique(['user_id', 'product_id']);
         });
     }
 
