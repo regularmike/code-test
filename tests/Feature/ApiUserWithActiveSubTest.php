@@ -74,7 +74,7 @@ class ApiUserWithActiveSubTest extends TestCase
             'product_id' => $this->product->id
         ]);
 
-        $response->assertStatus(204);
+        $response->assertStatus(201);
         $this->assertDatabaseHas('product_user', [
             'product_id' => $this->product->id,
             'user_id' => $userId
@@ -105,7 +105,7 @@ class ApiUserWithActiveSubTest extends TestCase
         $products = Product::take($numProducts)->get();
         $this->user->products()->saveMany($products);
 
-        $response = $this->deleteJson("/api/users/$userId/products");
+        $response = $this->getJson("/api/users/$userId/products");
 
         $response
             ->assertStatus(200)            

@@ -13,7 +13,12 @@ use Illuminate\Support\Facades\Route;
 | is assigned the "api" middleware group. Enjoy building your API!
 |
 */
-
-Route::middleware('auth:api')->get('/user', function (Request $request) {
-    return $request->user();
+Route::middleware('auth:api')->group(function () {
+    Route::resource('products', 'ProductController');
+    Route::post('/users/{user}/products', 'ProductUserController@create');
+    Route::delete('/users/{user}/products/{productId}', 'ProductUserController@destroy');
+    Route::get('/users/{user}/products', 'ProductUserController@show');
 });
+
+
+
