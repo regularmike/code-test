@@ -9,6 +9,8 @@ use Illuminate\Support\Facades\Storage;
 
 class ProductController extends Controller
 {
+    private $imageDir = 'public/product_images';
+
     public function show(Product $product)
     {
         $this->authorize('view', $product);
@@ -18,7 +20,7 @@ class ProductController extends Controller
     public function index()
     {
         $this->authorize('viewAny', Product::class);
-        return Product::all();
+        return Product::orderBy('name')->get();
     }
 
     public function store(ProductRequest $request)
@@ -28,8 +30,8 @@ class ProductController extends Controller
 
         $product = Product::create($validated);
         if ($request->file('image')) {
-            $path = Storage::putFile('product_images', $request->file('image'));                                    
-            $product->image = str_replace('product_images/', '', $path);
+            $path = Storage::putFile($this->imageDir, $request->file('image'));                                    
+            $product->image = str_replace($this->imageDir . '/', '', $path);
         }
         $product->save();
 
@@ -50,21 +52,21 @@ class ProductController extends Controller
         return response([
             'success' => true,
             'message' => 'Product updated.'            
-        ], 204);
+        ], 200);
     }
 
     public function addImage(Request $request, Product $product)
     {
         $this->authorize('update', $product);        
-        $path = Storage::putFile('product_images', $request->file('image'));                                    
-        $product->image = str_replace('product_images/', '', $path);        
+        $path = Storage::putFile($this->imageDir, $request->file('image'));                                    
+        $product->image = str_replace($this->imageDir . '/', '', $path);    
         $product->save();        
 
         return response([
             'success' => true,
             'message' => 'Product image added.',
             'path' => $path
-        ], 204);
+        ], 200);
     }
 
     public function destroy(Product $product)
@@ -76,6 +78,6 @@ class ProductController extends Controller
         return response([
             'success' => true,
             'message' => 'Product deleted.'            
-        ], 204);
+        ], 200);
     }
 }

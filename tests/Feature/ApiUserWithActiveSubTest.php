@@ -91,7 +91,7 @@ class ApiUserWithActiveSubTest extends TestCase
 
         $response = $this->deleteJson("/api/users/$userId/products/$productId");
 
-        $response->assertStatus(204);
+        $response->assertStatus(200);
         $this->assertDatabaseMissing('product_user', [
             'product_id' => $this->product->id,
             'user_id' => $userId

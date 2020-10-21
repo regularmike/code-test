@@ -19,7 +19,7 @@ class ProductUserController extends Controller
     {                        
         $this->authorize('delete', ProductUser::class);
         $user->products()->detach($productId);
-        return response(['success' => true], 204);      
+        return response(['success' => true]);      
     }
 
     function show(User $user)

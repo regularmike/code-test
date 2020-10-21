@@ -17,7 +17,7 @@ class ApiAdminUserTest extends TestCase
 {    
     use RefreshDatabase;
 
-    private $user, $product, $imgDirName;
+    private $user, $product, $imgDirName = 'public/product_images';
 
     protected function setUp(): void
     {
@@ -31,8 +31,7 @@ class ApiAdminUserTest extends TestCase
         $this->user = User::where('is_admin', true)->first();
         Passport::actingAs($this->user);
 
-        $this->product = Product::first();             
-        $this->imgDirName = 'product_images';
+        $this->product = Product::first();                     
         Storage::fake('local');  
     }    
 
@@ -131,7 +130,7 @@ class ApiAdminUserTest extends TestCase
 
         $response = $this->patchJson("/api/products/{$product->id}", $product->toArray());        
 
-        $response->assertStatus(204);
+        $response->assertStatus(200);
         $this->assertDatabaseHas('products', [
             'name' => $product->name            
         ]);
@@ -144,7 +143,7 @@ class ApiAdminUserTest extends TestCase
 
         $response = $this->deleteJson("/api/products/$productId");
 
-        $response->assertStatus(204);                 
+        $response->assertStatus(200);                 
         $this->assertDatabaseMissing('products', [
             'id' => $productId
         ]);
@@ -158,7 +157,7 @@ class ApiAdminUserTest extends TestCase
 
         $response = $this->patchJson("/api/products/{$product->id}/image", ['image' => $file]);
 
-        $response->assertStatus(204);                 
+        $response->assertStatus(200);                 
         Storage::disk('local')->assertExists(sprintf('%s/%s', $this->imgDirName, $image));
         $this->assertDatabaseHas('products', [
             'id' => $product->id,
