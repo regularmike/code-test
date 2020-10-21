@@ -31,9 +31,9 @@ class ApiAdminUserTest extends TestCase
         $this->user = User::where('is_admin', true)->first();
         Passport::actingAs($this->user);
 
-        $this->product = Product::first();   
-        $this->imgDirName = 'product_images';   
-        Storage::fake($this->imgDirName);  
+        $this->product = Product::first();             
+        $this->imgDirName = 'product_images';
+        Storage::fake('local');  
     }    
 
     public function testAdminCanAddProductWithoutImage()
@@ -51,21 +51,26 @@ class ApiAdminUserTest extends TestCase
     }    
 
     public function testAdminCanAddProductWithImage()
-    {        
-        $product = factory(Product::class)->make();
-        $filename = str_replace(' ', '_', $product->name) . '.jpg';
-        $product->image = UploadedFile::fake()->image($filename);
+    {                        
+        $product = factory(Product::class)->make();        
+        $file = UploadedFile::fake()->image('product_image.jpg');        
 
-        $response = $this->postJson("/api/products", $product->toArray());
+        $response = $this->postJson("/api/products", 
+            array_merge(            
+                $product->toArray(),
+                ['image' => $file]
+            )
+        );                
 
+        $image = $file->hashName();
         $response->assertStatus(201);
         $this->assertDatabaseHas('products', [
             'name' => $product->name,
             'description' => $product->description,
             'price' => $product->price,
-            'image' => $product->image
+            'image' => $image
         ]);
-        Storage::disk($this->imgDirName)->assertExists($filename);
+        Storage::disk('local')->assertExists(sprintf('%s/%s', $this->imgDirName, $image));
     }    
 
     public function testNameIsRequired()
@@ -74,9 +79,11 @@ class ApiAdminUserTest extends TestCase
 
         $response = $this->postJson("/api/products", $product->toArray());
 
-        $response->assertStatus(400)
+        $response->assertStatus(422)
                  ->assertJson([
-                    'message' => 'Product name is required.'
+                    'errors' => [
+                        'name' => ['The name field is required.']
+                    ]
                  ]);
         $this->assertDatabaseMissing('products', [
             'name' => null
@@ -89,9 +96,11 @@ class ApiAdminUserTest extends TestCase
 
         $response = $this->postJson("/api/products", $product->toArray());
 
-        $response->assertStatus(400)
+        $response->assertStatus(422)
                  ->assertJson([
-                    'message' => 'Product description is required.'
+                    'errors' => [
+                        'description' => ['The description field is required.']
+                    ]
                  ]);
         $this->assertDatabaseMissing('products', [
             'description' => null
@@ -104,9 +113,11 @@ class ApiAdminUserTest extends TestCase
 
         $response = $this->postJson("/api/products", $product->toArray());
 
-        $response->assertStatus(400)
+        $response->assertStatus(422)
                  ->assertJson([
-                    'message' => 'Product price is required.'
+                    'errors' => [
+                        'price' => ['The price field is required.']
+                    ]
                  ]);
         $this->assertDatabaseMissing('products', [
             'price' => null
@@ -116,9 +127,9 @@ class ApiAdminUserTest extends TestCase
     public function testAdminCanUpdateProduct()
     {
         $product = $this->product;
-        $product->name .= ' UPDATED';
+        $product->name .= ' UPDATED';        
 
-        $response = $this->patchJson("/api/products/{$product->id}", ['name' => $product->name]);
+        $response = $this->patchJson("/api/products/{$product->id}", $product->toArray());        
 
         $response->assertStatus(204);
         $this->assertDatabaseHas('products', [
@@ -142,15 +153,16 @@ class ApiAdminUserTest extends TestCase
     public function testAdminCanUploadProductImage()
     {
         $product = $this->product;        
-        $filename = str_replace(' ', '_', $product->name) . '.jpg';
-        $image = UploadedFile::fake()->image($filename);                
+        $file = UploadedFile::fake()->image('product_image.jpg');               
+        $image = $file->hashName();
 
-        $response = $this->patchJson("/api/products/{$product->id}/image", ['image' => $image]);
+        $response = $this->patchJson("/api/products/{$product->id}/image", ['image' => $file]);
 
         $response->assertStatus(204);                 
-        Storage::disk($this->imgDirName)->assertExists($filename);
+        Storage::disk('local')->assertExists(sprintf('%s/%s', $this->imgDirName, $image));
         $this->assertDatabaseHas('products', [
+            'id' => $product->id,
             'image' => $image
-        ]);
+        ]);                
     }        
 }

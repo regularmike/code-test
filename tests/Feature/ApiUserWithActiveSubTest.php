@@ -111,4 +111,23 @@ class ApiUserWithActiveSubTest extends TestCase
             ->assertStatus(200)            
             ->assertJsonCount($numProducts);
     }
+
+    public function testUserCanNotPerformAdminFunctions()
+    {        
+        $productId = $this->product->id;
+
+        $newProduct = factory(Product::class)->make();
+        $response = $this->postJson("/api/products", $newProduct->toArray());
+        $response->assertStatus(403);
+
+        $this->product->name .= ' UPDATED';        
+        $response = $this->patchJson("/api/products/$productId", $this->product->toArray());
+        $response->assertStatus(403);
+        
+        $response = $this->patchJson("/api/products/$productId/image");
+        $response->assertStatus(403);
+        
+        $response = $this->deleteJson("/api/products/$productId");
+        $response->assertStatus(403);                
+    }
 }
