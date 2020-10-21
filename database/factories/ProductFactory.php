@@ -21,7 +21,7 @@ $factory->define(Product::class, function (Faker $faker) {
     $index = array_rand($productModifiers);
 
     return [
-        'name' => sprintf('%s %s', ucfirst($faker->word), $productModifiers[$index]),
+        'name' => sprintf('%s %s', ucfirst($faker->unique()->word), $productModifiers[$index]),
         'description' => $faker->text,
         'price' => $faker->randomNumber(2)        
     ];

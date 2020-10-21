@@ -15,7 +15,9 @@ use Illuminate\Support\Facades\Route;
 */
 Route::middleware('auth:api')->group(function () {
     Route::resource('products', 'ProductController');
-    Route::post('/users/{user}/products', 'ProductUserController@create');
+    Route::patch('/products/{product}/image', 'ProductController@addImage');
+
+    Route::post('/users/{user}/products', 'ProductUserController@store');
     Route::delete('/users/{user}/products/{productId}', 'ProductUserController@destroy');
     Route::get('/users/{user}/products', 'ProductUserController@show');
 });

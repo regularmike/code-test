@@ -8,7 +8,7 @@ use Illuminate\Http\Request;
 
 class ProductUserController extends Controller
 {
-    function create(Request $request, User $user)
+    function store(Request $request, User $user)
     {        
         $this->authorize('create', ProductUser::class);
         $user->products()->attach($request->product_id);
