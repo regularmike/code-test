@@ -57,6 +57,9 @@ class User extends Authenticatable
     public function getHasActiveSubscriptionAttribute() 
     {
         $sub = $this->subscription;        
+        if (!$sub) {
+            return false;
+        }
         return Carbon::now()->between($sub->start, $sub->end);
     }
 }

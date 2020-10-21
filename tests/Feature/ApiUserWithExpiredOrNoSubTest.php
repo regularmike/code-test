@@ -59,7 +59,7 @@ class ApiUserWithExpiredOrNoSubTest extends TestCase
         $response = $this->deleteJson("/api/users/$userId/products/$productId");
         $response->assertStatus(403);
 
-        $response = $this->deleteJson("/api/users/$userId/products");
+        $response = $this->getJson("/api/users/$userId/products");
         $response->assertStatus(403);
     }
 
